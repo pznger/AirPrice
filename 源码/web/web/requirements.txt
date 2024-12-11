@@ -1,0 +1,9 @@
+sklearn
+flask
+requests
+numpy
+pandas
+seaborn
+matplotlib
+bs4
+PyExecJS

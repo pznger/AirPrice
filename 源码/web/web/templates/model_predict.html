@@ -1,0 +1,93 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<script src="../static/js/jquery.min.js" type="text/javascript" charset='utf-8'></script>
+<script src="../static/js/echarts.js" charset='utf-8'></script>
+
+<script type="text/javascript">
+    // 初始化界面
+    $(function () {
+
+        $('#li_1').attr('class', '');
+        $('#li_2').attr('class', '');
+        $('#li_3').attr('class', '');
+        $('#li_4').attr('class', 'active');
+
+        // 判断是否登录
+        $.get('http://127.0.0.1:5000/check_login', {},
+            function (data) {
+                console.log(data);
+                if (data['login'] === false) {
+                    window.location.href = '/'
+                }
+                else {
+                    $('#show_login_reg').hide();
+                    $('#index_img').css('height', '95%');
+                }
+            }
+        );
+
+        $('#submit').click(function () {
+            var formData = new FormData();
+
+            formData.append("file", $('#i-file')[0].files[0]);
+
+            $.ajax({
+                url: '/submit_and_predict',
+                dataType: 'json',
+                type: 'POST',
+                async: false,
+                data: formData,
+                processData: false, // 使数据不做处理
+                contentType: false, // 不要设置Content-Type请求头
+                success: function (data) {
+                    $('#accuracy').text(data['acc'].toFixed(3));
+                    $('#precision').text(data['precision'].toFixed(3));
+                    $('#recall').text(data['recall'].toFixed(3));
+
+                    $('#header').html(data['header']);
+                    $('#items').html(data['rows']);
+                },
+                error: function (response) {
+                    console.log(response);
+                }
+            });
+        });
+
+    });
+</script>
+
+<div class="container">
+    <h3 class="page-header">票价预测平台</h3>
+    <div class="row" style="margin-top: 20px;">
+            <div class="form-group" style="margin-left: 180px;">
+                <div class="col-sm-4 control-label" style="font-size: 18px;">选择测试数据:</div>
+                <div class="col-sm-5" style="margin-left: -100px;">
+                    <div class="input-group">
+                        <input id='location' class="form-control" onclick="$('#i-file').click();">
+                        <label class="input-group-btn">
+                            <input type="button" id="i-check" value="浏览文件" class="btn btn-primary"
+                                   onclick="$('#i-file').click();">
+                        </label>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <input type="submit" value="上传" class="btn btn-success" id="submit"/>
+                </div>
+                <input type="file" name="file" id='i-file' accept=".csv"
+                       onchange="$('#location').val($('#i-file').val());" style="display: none">
+            </div>
+        </div>
+
+</div>
+        <div class="col-xs-12 placeholder">
+            <table class="table table-striped table-hover" style="margin-left: 10px;margin-top: -10px; font-size: 18px" align="left">
+                <thead>
+                <tr id="header">
+                </tr>
+                </thead>
+                <tbody id="items">
+                </tbody>
+            </table>
+        </div>
+{% endblock %}
